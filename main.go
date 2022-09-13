@@ -1,5 +1,7 @@
 package main
 
-func main() {
+import "github.com/edocm/huecli/cmd"
 
+func main() {
+	cmd.Execute()
 }
