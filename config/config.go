@@ -1,4 +1,10 @@
 package config
 
-func InitConfig() {
+func LoadConfig(bridge string, key string) {
+	initConfig()
+
+}
+
+func initConfig() {
+
 }
