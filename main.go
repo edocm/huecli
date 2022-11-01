@@ -1,25 +1,37 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-
 	"github.com/edocm/huecli/cmd"
+	"github.com/edocm/huecli/config"
 )
+
+func init() {
+	config.LoadConfig()
+}
 
 func main() {
 	cmd.Execute()
 
-	var test map[string]any
+	// var test map[string]any
 
-	testJson := `{"birds":{"pigeon":"likes to perch on rocks","eagle":"bird of prey"},"animals":"none"}`
+	// type Test []struct {
+	// 	Error struct {
+	// 		Type        int    `json:"type"`
+	// 		Address     string `json:"address"`
+	// 		Description string `json:"description"`
+	// 	} `json:"error"`
+	// }
 
-	json.Unmarshal([]byte(testJson), &test)
+	// var message Test
 
-	println(test)
+	// testJson := `[{"error":{"type":101,"address":"","description":"link button not pressed"}}]`
 
-	for key := range test {
-		fmt.Println(fmt.Sprint(test[key]))
-	}
+	// json.Unmarshal([]byte(testJson), &message)
+
+	// fmt.Println(message)
+
+	// for key := range test {
+	// 	fmt.Println(fmt.Sprint(test[key]))
+	// }
 
 }

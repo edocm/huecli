@@ -2,10 +2,15 @@ package api
 
 import (
 	"bytes"
+	"crypto/tls"
 	"io/ioutil"
 	"log"
 	"net/http"
 )
+
+func init() {
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+}
 
 func GET(url string) []byte {
 	req := createRequest(http.MethodGet, url, nil)
