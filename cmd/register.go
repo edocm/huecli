@@ -54,6 +54,8 @@ func init() {
 	registerCmd.MarkFlagRequired("bridge")
 }
 
+// TODO: add logging with log libary and change see where log fatal is useful
+
 func registerApp() {
 
 	type RegisterMessage struct {
@@ -61,8 +63,13 @@ func registerApp() {
 		Generateclientkey bool   `json:"generateclientkey"`
 	}
 
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	requestBody, err := json.Marshal(RegisterMessage{
-		Devicetype:        "huecli#" + fmt.Sprint(os.Hostname()),
+		Devicetype:        "huecli#" + hostname,
 		Generateclientkey: true,
 	})
 	if err != nil {
