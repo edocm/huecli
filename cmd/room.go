@@ -58,3 +58,19 @@ func init() {
 	offCmd.MarkFlagRequired("id")
 
 }
+
+func getRoomId(roomName string) {
+
+}
+
+func getRoomList() {
+
+}
+
+func turnRoomOn(roomId string) {
+
+}
+
+func turnRoomOff(roomId string) {
+
+}
