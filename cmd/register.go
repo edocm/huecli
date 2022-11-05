@@ -97,9 +97,10 @@ func registerApp() {
 		}
 	}
 
+	viper.Set("bridge", bridge)
 	viper.Set("username", successMessage.Success.Username)
 	viper.Set("clientkey", successMessage.Success.Clientkey)
-	if err := viper.WriteConfig(); err != nil {
+	if err := viper.WriteConfigAs("./config.yaml"); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("Huecli is registered successful.")

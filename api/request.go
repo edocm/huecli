@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"crypto/tls"
 	"fmt"
+	"github.com/edocm/huecli/config"
+	"github.com/spf13/viper"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -44,6 +46,9 @@ func createRequest(method string, url string, body []byte) *http.Request {
 	req, err := http.NewRequest(method, url, bodyReader)
 	if err != nil {
 		log.Fatal(err)
+	}
+	if config.Exists {
+		req.Header.Set("hue-application-key", viper.GetString("username"))
 	}
 	return req
 }

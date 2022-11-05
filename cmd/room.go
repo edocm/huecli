@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
-
+	"github.com/edocm/huecli/api"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"log"
 )
 
 var id string
@@ -40,8 +43,30 @@ var listCmd = &cobra.Command{
 	Short: "List up all rooms.",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("list called")
+		getRoomList()
 	},
+}
+
+type RoomListResponse struct {
+	Errors []struct {
+	} `json:"errors"`
+	Data []struct {
+		Id       string `json:"id"`
+		IdV1     string `json:"id_v1"`
+		Children []struct {
+			RId   string `json:"rid"`
+			RType string `json:"rtype"`
+		} `json:"children"`
+		Services []struct {
+			RId   string `json:"rid"`
+			RType string `json:"rtype"`
+		} `json:"services"`
+		Metadata struct {
+			Name      string `json:"name"`
+			ArcheType string `json:"archetype"`
+		} `json:"metadata"`
+		Type string `json:"type"`
+	} `json:"data"`
 }
 
 func init() {
@@ -64,7 +89,18 @@ func getRoomId(roomName string) {
 }
 
 func getRoomList() {
+	var roomListResponse RoomListResponse
 
+	res, err := api.Request("GET", "https://"+viper.GetString("bridge")+"/clip/v2/resource/room", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := json.Unmarshal(res, &roomListResponse); err != nil {
+		log.Fatal(err)
+	}
+	for _, data := range roomListResponse.Data {
+		fmt.Println(data.Metadata.Name)
+	}
 }
 
 func turnRoomOn(roomId string) {

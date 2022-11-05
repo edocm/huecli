@@ -1,23 +1,38 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"fmt"
+	"github.com/spf13/viper"
+	"log"
+)
 
 var Exists bool
 
 func LoadConfig() {
 	initConfig()
-	Exists = readConfig()
+	exists, err := readConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	Exists = exists
 }
 
 func initConfig() {
-	viper.SetConfigFile("./config.yaml")
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+	viper.SetDefault("bridge", "")
 	viper.SetDefault("username", "")
 	viper.SetDefault("clientkey", "")
 }
 
-func readConfig() bool {
+func readConfig() (bool, error) {
 	if err := viper.ReadInConfig(); err != nil {
-		return false
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			return false, nil
+		} else {
+			return true, fmt.Errorf("error while reading config file: %v", err)
+		}
 	}
-	return true
+	return true, nil
 }
