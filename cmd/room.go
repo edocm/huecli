@@ -9,7 +9,7 @@ import (
 	"log"
 )
 
-var id string
+var name string
 
 var roomCmd = &cobra.Command{
 	Use:   "room",
@@ -43,7 +43,7 @@ var listCmd = &cobra.Command{
 	Short: "List up all rooms.",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
-		getRoomList()
+		printRoomList()
 	},
 }
 
@@ -76,37 +76,46 @@ func init() {
 	roomCmd.AddCommand(offCmd)
 	roomCmd.AddCommand(listCmd)
 
-	onCmd.Flags().StringVar(&id, "id", "", "Determine which room should be turned on.")
-	onCmd.MarkFlagRequired("id")
+	onCmd.Flags().StringVarP(&name, "name", "n", "", "Determine which room should be turned on.")
+	onCmd.MarkFlagRequired("name")
 
-	offCmd.Flags().StringVar(&id, "id", "", "Determine which room should be turned off.")
-	offCmd.MarkFlagRequired("id")
-
-}
-
-func getRoomId(roomName string) {
+	offCmd.Flags().StringVarP(&name, "name", "n", "", "Determine which room should be turned off.")
+	offCmd.MarkFlagRequired("name")
 
 }
 
-func getRoomList() {
+func getRoomList() (map[string]string, error) {
 	var roomListResponse RoomListResponse
+	roomList := make(map[string]string)
 
 	res, err := api.Request("GET", "https://"+viper.GetString("bridge")+"/clip/v2/resource/room", nil)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("error while request room list: %v", err)
 	}
 	if err := json.Unmarshal(res, &roomListResponse); err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("error while parsing room list response: %v", err)
 	}
 	for _, data := range roomListResponse.Data {
-		fmt.Println(data.Metadata.Name)
+		roomList[data.Metadata.Name] = data.Id
+	}
+	return roomList, nil
+}
+
+func printRoomList() {
+	roomList, err := getRoomList()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("These are the available rooms:")
+	for roomName := range roomList {
+		fmt.Println("-", roomName)
 	}
 }
 
-func turnRoomOn(roomId string) {
+func turnRoomOn(roomName string) {
 
 }
 
-func turnRoomOff(roomId string) {
+func turnRoomOff(roomName string) {
 
 }
