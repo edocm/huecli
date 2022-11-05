@@ -79,7 +79,7 @@ func registerApp() {
 	var successMessage SuccessMessage
 	var errorMessage ErrorMessage
 
-	res := api.POST("https://"+bridge+"/api", requestBody)
+	res, err := api.Request("POST", "https://"+bridge+"/api", requestBody)
 
 	if err := json.Unmarshal([]byte(strings.Trim(string(res), "[]")), &successMessage); (err != nil || successMessage == SuccessMessage{}) {
 		if err := json.Unmarshal([]byte(strings.Trim(string(res), "[]")), &errorMessage); (err != nil || errorMessage == ErrorMessage{}) {
