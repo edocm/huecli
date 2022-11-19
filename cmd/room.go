@@ -13,7 +13,7 @@ var name string
 
 var roomCmd = &cobra.Command{
 	Use:   "room",
-	Short: "Control a room via hue api.",
+	Short: "Control a room via hue api",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -22,7 +22,7 @@ var roomCmd = &cobra.Command{
 
 var onCmd = &cobra.Command{
 	Use:   "on",
-	Short: "Turn the lights in a specific room on.",
+	Short: "Turn the lights in a specific room on",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("on called")
@@ -31,7 +31,7 @@ var onCmd = &cobra.Command{
 
 var offCmd = &cobra.Command{
 	Use:   "off",
-	Short: "Turn the lights in a specific room off.",
+	Short: "Turn the lights in a specific room off",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("off called")
@@ -40,7 +40,7 @@ var offCmd = &cobra.Command{
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List up all rooms.",
+	Short: "List up all rooms",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
 		printRoomList()
@@ -76,10 +76,10 @@ func init() {
 	roomCmd.AddCommand(offCmd)
 	roomCmd.AddCommand(listCmd)
 
-	onCmd.Flags().StringVarP(&name, "name", "n", "", "Determine which room should be turned on.")
+	onCmd.Flags().StringVarP(&name, "name", "n", "", "Determine which room should be turned on")
 	onCmd.MarkFlagRequired("name")
 
-	offCmd.Flags().StringVarP(&name, "name", "n", "", "Determine which room should be turned off.")
+	offCmd.Flags().StringVarP(&name, "name", "n", "", "Determine which room should be turned off")
 	offCmd.MarkFlagRequired("name")
 
 }

@@ -35,7 +35,7 @@ type SuccessMessage struct {
 
 var registerCmd = &cobra.Command{
 	Use:   "register",
-	Short: "A brief description of your command",
+	Short: "Register huecli at your hue bridge",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
 		if config.Exists {
