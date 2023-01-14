@@ -8,7 +8,7 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "huecli",
-	Short: "A brief description of your application",
+	Short: "Shell control for your hue lights",
 	Long:  "",
 }
 
