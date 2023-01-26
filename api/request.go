@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"crypto/tls"
 	"fmt"
-	"github.com/edocm/huecli/config"
-	"github.com/spf13/viper"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
+
+	"github.com/edocm/huecli/config"
+	"github.com/spf13/viper"
 )
 
 func init() {
@@ -19,13 +20,13 @@ func Request(method string, url string, body []byte) ([]byte, error) {
 	var req *http.Request
 
 	switch method {
-	case "GET":
+	case http.MethodGet:
 		req = createRequest(http.MethodGet, url, nil)
-	case "PUT":
+	case http.MethodPut:
 		req = createRequest(http.MethodPut, url, body)
-	case "POST":
+	case http.MethodPost:
 		req = createRequest(http.MethodPost, url, body)
-	case "DELETE":
+	case http.MethodDelete:
 		req = createRequest(http.MethodDelete, url, body)
 	default:
 		return nil, fmt.Errorf("can not create a request with the given request method: %v", method)
@@ -34,7 +35,7 @@ func Request(method string, url string, body []byte) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error while sending http request: %v", err)
 	}
-	resBody, err := ioutil.ReadAll(res.Body)
+	resBody, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error while parsing response body: %v", err)
 	}

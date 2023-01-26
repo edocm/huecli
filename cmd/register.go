@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -79,7 +80,7 @@ func registerApp() {
 	var successMessage SuccessMessage
 	var errorMessage ErrorMessage
 
-	res, err := api.Request("POST", "https://"+bridge+"/api", requestBody)
+	res, err := api.Request(http.MethodPost, "https://"+bridge+"/api", requestBody)
 	if err != nil {
 		log.Fatal(err)
 	}

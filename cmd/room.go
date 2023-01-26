@@ -3,10 +3,12 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/edocm/huecli/api"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"log"
 )
 
 var name string
@@ -25,7 +27,7 @@ var onCmd = &cobra.Command{
 	Short: "Turn the lights in a specific room on",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("on called")
+		changeRoomLightStatus(name, true)
 	},
 }
 
@@ -34,7 +36,7 @@ var offCmd = &cobra.Command{
 	Short: "Turn the lights in a specific room off",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("off called")
+		changeRoomLightStatus(name, false)
 	},
 }
 
@@ -69,6 +71,14 @@ type RoomListResponse struct {
 	} `json:"data"`
 }
 
+type GroupLightMessage struct {
+	On OnProperty `json:"on"`
+}
+
+type OnProperty struct {
+	On bool `json:"on"`
+}
+
 func init() {
 	rootCmd.AddCommand(roomCmd)
 
@@ -88,17 +98,55 @@ func getRoomList() (map[string]string, error) {
 	var roomListResponse RoomListResponse
 	roomList := make(map[string]string)
 
-	res, err := api.Request("GET", "https://"+viper.GetString("bridge")+"/clip/v2/resource/room", nil)
+	res, err := api.Request(http.MethodGet, "https://"+viper.GetString("bridge")+"/clip/v2/resource/room", nil)
 	if err != nil {
 		return nil, fmt.Errorf("error while request room list: %v", err)
 	}
 	if err := json.Unmarshal(res, &roomListResponse); err != nil {
 		return nil, fmt.Errorf("error while parsing room list response: %v", err)
 	}
-	for _, data := range roomListResponse.Data {
-		roomList[data.Metadata.Name] = data.Id
+	for _, room := range roomListResponse.Data {
+		for _, service := range room.Services {
+			if service.RType == "grouped_light" {
+				roomList[room.Metadata.Name] = service.RId
+			}
+		}
 	}
 	return roomList, nil
+}
+
+func changeRoomLightStatus(roomName string, status bool) {
+	roomList, err := getRoomList()
+	if err != nil {
+		log.Fatal(err)
+	}
+	roomId, ok := roomList[roomName]
+	if ok {
+		requestBody, err := json.Marshal(GroupLightMessage{
+			On: OnProperty{
+				On: status,
+			},
+		})
+		if err != nil {
+			log.Fatal(fmt.Errorf("error while build request for changing roomlight status: %v", err))
+		}
+		fmt.Println(roomId)
+		res, err := api.Request(http.MethodPut, "https://"+viper.GetString("bridge")+"/clip/v2/resource/grouped_light/"+roomId, requestBody)
+		if err != nil || errorInResponse(res) {
+			log.Fatal(fmt.Errorf("error while request for changing roomlight status: %v", err))
+		}
+	} else {
+		printRoomNotAvailable(roomName)
+	}
+}
+
+func errorInResponse(res []byte) bool {
+	// TODO
+	return false
+}
+
+func printRoomNotAvailable(roomName string) {
+	fmt.Printf("The room %s is not available. Please try again. \n", roomName)
 }
 
 func printRoomList() {
@@ -110,12 +158,4 @@ func printRoomList() {
 	for roomName := range roomList {
 		fmt.Println("-", roomName)
 	}
-}
-
-func turnRoomOn(roomName string) {
-
-}
-
-func turnRoomOff(roomName string) {
-
 }
