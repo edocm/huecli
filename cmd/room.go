@@ -130,23 +130,26 @@ func changeRoomLightStatus(roomName string, status bool) {
 		if err != nil {
 			log.Fatal(fmt.Errorf("error while build request for changing roomlight status: %v", err))
 		}
-		fmt.Println(roomId)
-		res, err := api.Request(http.MethodPut, "https://"+viper.GetString("bridge")+"/clip/v2/resource/grouped_light/"+roomId, requestBody)
-		if err != nil || errorInResponse(res) {
+		_, err = api.Request(http.MethodPut, "https://"+viper.GetString("bridge")+"/clip/v2/resource/grouped_light/"+roomId, requestBody)
+		if err != nil {
 			log.Fatal(fmt.Errorf("error while request for changing roomlight status: %v", err))
 		}
+		printSuccessMessage(roomName, status)
 	} else {
 		printRoomNotAvailable(roomName)
 	}
 }
 
-func errorInResponse(res []byte) bool {
-	// TODO
-	return false
-}
-
 func printRoomNotAvailable(roomName string) {
 	fmt.Printf("The room %s is not available. Please try again. \n", roomName)
+}
+
+func printSuccessMessage(roomName string, lightsOn bool) {
+	if lightsOn {
+		fmt.Printf("The lights in room %s are on. \n", roomName)
+	} else {
+		fmt.Printf("The lights in room %s are off.  \n", roomName)
+	}
 }
 
 func printRoomList() {
