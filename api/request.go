@@ -10,6 +10,7 @@ import (
 
 	"github.com/edocm/huecli/config"
 	"github.com/spf13/viper"
+	"golang.org/x/exp/slices"
 )
 
 func init() {
@@ -38,6 +39,11 @@ func Request(method string, url string, body []byte) ([]byte, error) {
 	resBody, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error while parsing response body: %v", err)
+	}
+
+	successStatusCodes := []int{http.StatusOK, http.StatusAccepted}
+	if !slices.Contains(successStatusCodes, res.StatusCode) {
+		return nil, fmt.Errorf("error in response: %v: %v", res.Status, string(resBody))
 	}
 	return resBody, nil
 }
