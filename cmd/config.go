@@ -3,12 +3,12 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/log"
 	"github.com/edocm/huecli/api"
 	"github.com/edocm/huecli/config"
 	"github.com/spf13/cobra"
@@ -16,7 +16,8 @@ import (
 )
 
 var (
-	bridge string
+	bridge         string
+	shouldResponse bool
 )
 
 type ErrorMessage struct {
@@ -34,6 +35,17 @@ type SuccessMessage struct {
 	} `json:"success" binding:"required"`
 }
 
+var configCmd = &cobra.Command{
+	Use:   "config",
+	Short: "Change huecli configuration",
+	Long:  "",
+	Run: func(cmd *cobra.Command, args []string) {
+		if cmd.Flags().Changed("responses") {
+			setResponses()
+		}
+	},
+}
+
 var registerCmd = &cobra.Command{
 	Use:   "register",
 	Short: "Register huecli at your hue bridge",
@@ -49,13 +61,17 @@ var registerCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(registerCmd)
+	rootCmd.AddCommand(configCmd)
 
-	registerCmd.Flags().StringVarP(&bridge, "bridge", "b", "", "Determine which room should be turned on.")
+	configCmd.AddCommand(registerCmd)
+
+	configCmd.Flags().BoolVarP(&shouldResponse, "responses", "r", true, "Determine if huecli should give you responses.")
+
+	registerCmd.Flags().StringVarP(&bridge, "bridge", "b", "", "Determine which bridge should be registered.")
 	registerCmd.MarkFlagRequired("bridge")
 }
 
-// TODO: add logging with log libary and change see where log fatal is useful
+// TODO: add logging with log library and change see where log fatal is useful
 
 func registerApp() {
 
@@ -89,7 +105,7 @@ func registerApp() {
 		if err := json.Unmarshal([]byte(strings.Trim(string(res), "[]")), &errorMessage); (err != nil || errorMessage == ErrorMessage{}) {
 			log.Fatal(err)
 		}
-		if errorMessage.Error.Type == 101 {
+		if errorMessage.Error.Type == 101 { //TODO: create error package to define error types
 			fmt.Println("You were too slow.")
 			return
 		} else {
@@ -104,10 +120,19 @@ func registerApp() {
 	if err := viper.WriteConfigAs("./config.yaml"); err != nil {
 		log.Fatal(err)
 	}
+	log.Infof("Application successfully registered at %s with username %s", bridge, successMessage.Success.Username)
 	fmt.Println("Huecli is registered successful.")
 }
 
 func pressButton() {
 	fmt.Println("Please press the button on your bridge. You have 10 seconds.")
 	time.Sleep(10 * time.Second)
+}
+
+func setResponses() {
+	viper.Set("responses", shouldResponse)
+	if err := viper.WriteConfigAs("./config.yaml"); err != nil {
+		log.Fatal(err)
+	}
+	log.Infof("Config for responses successfully changed to %b", shouldResponse)
 }

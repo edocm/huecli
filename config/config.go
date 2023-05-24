@@ -2,8 +2,9 @@ package config
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"log"
+
+	"github.com/spf13/viper"
 )
 
 var Exists bool
@@ -24,6 +25,8 @@ func initConfig() {
 	viper.SetDefault("bridge", "")
 	viper.SetDefault("username", "")
 	viper.SetDefault("clientkey", "")
+	// TODO: only print responses if true
+	viper.SetDefault("responses", true)
 }
 
 func readConfig() (bool, error) {

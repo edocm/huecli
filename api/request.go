@@ -5,9 +5,9 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 
+	"github.com/charmbracelet/log"
 	"github.com/edocm/huecli/config"
 	"github.com/spf13/viper"
 	"golang.org/x/exp/slices"
@@ -32,6 +32,7 @@ func Request(method string, url string, body []byte) ([]byte, error) {
 	default:
 		return nil, fmt.Errorf("can not create a request with the given request method: %v", method)
 	}
+	log.Debugf("Send %s request to %s", req.Method, req.URL)
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("error while sending http request: %v", err)
