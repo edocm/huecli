@@ -3,12 +3,13 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
+	"github.com/charmbracelet/log"
 	"github.com/edocm/huecli/api"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/exp/maps"
 )
 
 var name string
@@ -98,6 +99,7 @@ func getRoomList() (map[string]string, error) {
 	var roomListResponse RoomListResponse
 	roomList := make(map[string]string)
 
+	log.Debug("Request roomList")
 	res, err := api.Request(http.MethodGet, "https://"+viper.GetString("bridge")+"/clip/v2/resource/room", nil)
 	if err != nil {
 		return nil, fmt.Errorf("error while request room list: %v", err)
@@ -112,6 +114,7 @@ func getRoomList() (map[string]string, error) {
 			}
 		}
 	}
+	log.Debugf("Successfully requested roomList: %v", maps.Keys(roomList))
 	return roomList, nil
 }
 
@@ -139,6 +142,8 @@ func changeRoomLightStatus(roomName string, status bool) {
 		printRoomNotAvailable(roomName)
 	}
 }
+
+//TODO: add package for responses which is turned off by config
 
 func printRoomNotAvailable(roomName string) {
 	fmt.Printf("The room %s is not available. Please try again. \n", roomName)
