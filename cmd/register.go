@@ -16,8 +16,7 @@ import (
 )
 
 var (
-	bridge         string
-	shouldResponse bool
+	bridge string
 )
 
 type ErrorMessage struct {
@@ -35,17 +34,6 @@ type SuccessMessage struct {
 	} `json:"success" binding:"required"`
 }
 
-var configCmd = &cobra.Command{
-	Use:   "config",
-	Short: "Change huecli configuration",
-	Long:  "",
-	Run: func(cmd *cobra.Command, args []string) {
-		if cmd.Flags().Changed("responses") {
-			setResponses()
-		}
-	},
-}
-
 var registerCmd = &cobra.Command{
 	Use:   "register",
 	Short: "Register huecli at your hue bridge",
@@ -61,17 +49,11 @@ var registerCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(configCmd)
-
-	configCmd.AddCommand(registerCmd)
-
-	configCmd.Flags().BoolVarP(&shouldResponse, "responses", "r", true, "Determine if huecli should give you responses.")
+	rootCmd.AddCommand(registerCmd)
 
 	registerCmd.Flags().StringVarP(&bridge, "bridge", "b", "", "Determine which bridge should be registered.")
 	registerCmd.MarkFlagRequired("bridge")
 }
-
-// TODO: add logging with log library and change see where log fatal is useful
 
 func registerApp() {
 
@@ -120,19 +102,11 @@ func registerApp() {
 	if err := viper.WriteConfigAs("./config.yaml"); err != nil {
 		log.Fatal(err)
 	}
-	log.Infof("Application successfully registered at %s with username %s", bridge, successMessage.Success.Username)
+	log.Debugf("Application successfully registered at %s with username %s", bridge, successMessage.Success.Username)
 	fmt.Println("Huecli is registered successful.")
 }
 
 func pressButton() {
 	fmt.Println("Please press the button on your bridge. You have 10 seconds.")
 	time.Sleep(10 * time.Second)
-}
-
-func setResponses() {
-	viper.Set("responses", shouldResponse)
-	if err := viper.WriteConfigAs("./config.yaml"); err != nil {
-		log.Fatal(err)
-	}
-	log.Infof("Config for responses successfully changed to %b", shouldResponse)
 }

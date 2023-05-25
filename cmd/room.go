@@ -92,7 +92,6 @@ func init() {
 
 	offCmd.Flags().StringVarP(&name, "name", "n", "", "Determine which room should be turned off")
 	offCmd.MarkFlagRequired("name")
-
 }
 
 func getRoomList() (map[string]string, error) {
