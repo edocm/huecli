@@ -34,14 +34,6 @@ type RoomListResponse struct {
 	} `json:"data"`
 }
 
-type GroupLightMessage struct {
-	On OnProperty `json:"on"`
-}
-
-type OnProperty struct {
-	On bool `json:"on"`
-}
-
 func GetRoomList() (map[string]string, error) {
 	var roomListResponse RoomListResponse
 	roomList := make(map[string]string)
@@ -58,6 +50,7 @@ func GetRoomList() (map[string]string, error) {
 		for _, service := range room.Services {
 			if service.RType == "grouped_light" {
 				roomList[room.Metadata.Name] = service.RId
+				log.Infof("id: %v", service.RId)
 			}
 		}
 	}
@@ -65,27 +58,62 @@ func GetRoomList() (map[string]string, error) {
 	return roomList, nil
 }
 
-func ChangeRoomLightStatus(roomName string, status bool) error {
+func TurnRoomLightOn(roomName string, brightness int) error {
+	roomId, err := getRoomId(roomName)
+	if err != nil {
+		return fmt.Errorf("error while request roomId: %v", err)
+	}
+
+	message := GroupLightOnMessage{
+		On: OnProperty{
+			On: true,
+		},
+		Dimming: DimmingProperty{
+			Brightness: brightness,
+		},
+	}
+
+	if err := ChangeGroupedLight(roomId, message); err != nil {
+		return fmt.Errorf("error while request for changing roomlight status: %v", err)
+	}
+
+	return nil
+}
+
+func TurnRoomLightOff(roomName string) error {
+	roomId, err := getRoomId(roomName)
+	if err != nil {
+		return fmt.Errorf("error while request roomId: %v", err)
+	}
+
+	message := GroupLightOffMessage{
+		On: OnProperty{
+			On: false,
+		},
+	}
+
+	if err := ChangeGroupedLight(roomId, message); err != nil {
+		return fmt.Errorf("error while request for changing roomlight status: %v", err)
+	}
+
+	return nil
+}
+
+func ChangeRoomLightColor(roomName string, color string, brightness int) error {
+	// TODO: implement color change
+	log.Info("Change Color!")
+	return nil
+}
+
+func getRoomId(roomName string) (string, error) {
 	roomList, err := GetRoomList()
 	if err != nil {
-		return fmt.Errorf("error while requesting room list: %v", err)
+		return "", fmt.Errorf("error while requesting room list: %v", err)
 	}
 	roomId, ok := roomList[roomName]
 	if ok {
-		requestBody, err := json.Marshal(GroupLightMessage{
-			On: OnProperty{
-				On: status,
-			},
-		})
-		if err != nil {
-			return fmt.Errorf("error while build request for changing roomlight status: %v", err)
-		}
-		_, err = api.Request(http.MethodPut, "https://"+viper.GetString("bridge")+"/clip/v2/resource/grouped_light/"+roomId, requestBody)
-		if err != nil {
-			return fmt.Errorf("error while request for changing roomlight status: %v", err)
-		}
-		return nil
+		return roomId, nil
 	} else {
-		return errors.ErrRoomNotAvailable
+		return "", errors.ErrRoomNotAvailable
 	}
 }

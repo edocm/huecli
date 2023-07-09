@@ -9,7 +9,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var name string
+var (
+	name       string
+	brightness int
+	color      string
+)
 
 var roomCmd = &cobra.Command{
 	Use:   "room",
@@ -25,14 +29,20 @@ var onCmd = &cobra.Command{
 	Short: "Turn the lights in a specific room on",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := hue.ChangeRoomLightStatus(name, true); err != nil {
+		var err error
+		if cmd.Flags().Changed("color") {
+			err = hue.ChangeRoomLightColor(name, color, brightness)
+		} else {
+			err = hue.TurnRoomLightOn(name, brightness)
+		}
+		if err != nil {
 			if err == errors.ErrRoomNotAvailable {
 				printRoomNotAvailable(name)
 			} else {
 				log.Fatal(err)
 			}
 		} else {
-			printSuccessMessage(name, true)
+			printSuccessMessageOn(name, brightness, color)
 		}
 	},
 }
@@ -42,14 +52,14 @@ var offCmd = &cobra.Command{
 	Short: "Turn the lights in a specific room off",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := hue.ChangeRoomLightStatus(name, false); err != nil {
+		if err := hue.TurnRoomLightOff(name); err != nil {
 			if err == errors.ErrRoomNotAvailable {
 				printRoomNotAvailable(name)
 			} else {
 				log.Fatal(err)
 			}
 		} else {
-			printSuccessMessage(name, false)
+			printSuccessMessageOff(name)
 		}
 	},
 }
@@ -75,6 +85,8 @@ func init() {
 	roomCmd.AddCommand(listCmd)
 
 	onCmd.Flags().StringVarP(&name, "name", "n", "", "Determine which room should be turned on")
+	onCmd.Flags().IntVarP(&brightness, "brightness", "b", 50, "Determine how bright the room should be")
+	onCmd.Flags().StringVarP(&color, "color", "c", "", "Determine the color")
 	onCmd.MarkFlagRequired("name")
 
 	offCmd.Flags().StringVarP(&name, "name", "n", "", "Determine which room should be turned off")
@@ -85,12 +97,16 @@ func printRoomNotAvailable(roomName string) {
 	fmt.Printf("The room %s is not available. Please try again. \n", roomName)
 }
 
-func printSuccessMessage(roomName string, lightsOn bool) {
-	if lightsOn {
-		fmt.Printf("The lights in room %s are on. \n", roomName)
+func printSuccessMessageOn(roomName string, brightness int, color string) {
+	if color == "" {
+		fmt.Printf("The lights in room %s are on and brightness is set to %d \n", roomName, brightness)
 	} else {
-		fmt.Printf("The lights in room %s are off.  \n", roomName)
+		fmt.Printf("The lights in room %s are on. The color is set to %s and brightness to %d \n", roomName, color, brightness)
 	}
+}
+
+func printSuccessMessageOff(roomName string) {
+	fmt.Printf("The lights in room %s are off.  \n", roomName)
 }
 
 func printRoomList(roomList map[string]string) {
